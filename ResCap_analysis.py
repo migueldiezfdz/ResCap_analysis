@@ -107,7 +107,7 @@ for original in glob.iglob(loop_extract_b_path):
 
 
 current_directory1 = os.getcwd()
-extract_c = '/*c.1.gz'
+extract_c = '/*kma.1.gz'
 loop_extract_c_path = current_directory1+extract_c
 
 kma = '/bin/kma/kma'
@@ -115,9 +115,11 @@ kma_path= scriptpath+kma
 
 kma_db = '/dbs/kma_db/data-base-kma'
 kma_db_path= scriptpath+kma_db
+print(kma_db_path)
 
 
 for c1 in glob.iglob(loop_extract_c_path):
-    c2 = c1.replace('.1', '.2')
+    c2 = c1.replace('kma.1.gz', 'kma.2.gz')
     salida1 = c1.replace('.kma.1.gz', '')
+    print(c1,c2,salida1)
     subprocess.call([kma_path,'-ipe', c1, c2, '-o', salida1, '-t_db', kma_db_path, '-t', cores])
