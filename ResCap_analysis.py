@@ -66,12 +66,10 @@ df1 = df[['file','num_seqs']]
 df1.num_seqs = df1.num_seqs.astype(float)
 
 dict_of_reads = (df1.set_index('file')['num_seqs'].to_dict())
-
+print(dict_of_reads)
 for key, value in dict_of_reads.items():
     list_of_reads.append(value)
 
-lowest_num = min(list_of_reads)
-lowest_num = str(int(lowest_num))
 
 sum=0
 for num in list_of_reads:
@@ -85,10 +83,18 @@ outliers_value=str(outliers_value)
 outliers_list=[]
 outliers_value_list=[]
 
+not_outliers_list_value=[]
+
 for key, value in dict_of_reads.items():
     if value <= outliers_value_norm:
         outliers_list.append(key)
         outliers_value_list.append(value)
+    if value >= outliers_value_norm:
+        not_outliers_list_value.append(value)
+
+lowest_num = min(not_outliers_list_value)
+lowest_num = str(int(lowest_num))
+
 
 os.makedirs('./outliers')
 for f in outliers_list:
