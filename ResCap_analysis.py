@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import statistics
 import subprocess
 import glob
 import sys
@@ -19,6 +20,7 @@ parser = argparse.ArgumentParser(description=""
 
 parser.add_argument("-c","--clusters",default=1, help= 'Number of clusters available to use')
 parser.add_argument("-t","--table", help='CSV files (comma separated) with two columns, called R1 and R2')
+parser.add_argument("-d", "--db_kma", default='data-base-kma', help='database for KMA, input the database name (without .)')
 args = parser.parse_args()
 
 cores = args.clusters
@@ -27,7 +29,7 @@ print('number of cores =', cores)
 
 scriptpath = os.path.dirname(sys.argv[0])
 
-bowtie_db = '/dbs/bowtie_db/plataforma'
+bowtie_db = '/dbs/bowtie_db/full_platform'
 bowtie_db_path= scriptpath+bowtie_db
 current_directory1 = os.getcwd()
 extractR1R2 = '/*R1.fastq.gz'
@@ -51,6 +53,8 @@ else:
 
 dict_of_reads={}
 list_of_reads=[]
+list_of_reads_mean=[]
+
 
 
 
@@ -66,18 +70,23 @@ df1 = df[['file','num_seqs']]
 df1.num_seqs = df1.num_seqs.astype(float)
 
 dict_of_reads = (df1.set_index('file')['num_seqs'].to_dict())
-print(dict_of_reads)
 for key, value in dict_of_reads.items():
     list_of_reads.append(value)
 
-
 sum=0
 for num in list_of_reads:
-    sum = sum +num
-average= sum/len(list_of_reads)
-outliers_value_norm=(average*0.1)
-outliers_value=int(average*0.1)
+    if num >= 10:
+        list_of_reads_mean.append(num)
+
+media=statistics.mean(list_of_reads_mean)
+
+
+outliers_value_norm=(media*0.1)
+outliers_value=int(media*0.1)
 outliers_value=str(outliers_value)
+
+with open("outlier_threshold.txt", "w") as text_file:
+    text_file.write(outliers_value)
 
 
 outliers_list=[]
@@ -95,6 +104,8 @@ for key, value in dict_of_reads.items():
 lowest_num = min(not_outliers_list_value)
 lowest_num = str(int(lowest_num))
 
+with open("lowest_num.txt", "w") as text_file:
+    text_file.write(lowest_num)
 
 os.makedirs('./outliers')
 for f in outliers_list:
@@ -119,9 +130,9 @@ loop_extract_c_path = current_directory1+extract_c
 kma = '/bin/kma/kma'
 kma_path= scriptpath+kma
 
-kma_db = '/dbs/kma_db/data-base-kma'
-kma_db_path= scriptpath+kma_db
-print(kma_db_path)
+db = args.db_kma
+kma_db = '/dbs/kma_db/'
+kma_db_path= scriptpath+kma_db+db
 
 
 for c1 in glob.iglob(loop_extract_c_path):
